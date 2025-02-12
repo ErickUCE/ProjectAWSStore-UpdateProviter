@@ -11,8 +11,8 @@ async function updateProvider(_, { id, input }) {
     // Notificar a los otros microservicios
     // Notify other microservices
     const instances = [
-        'http://localhost:5000/sync-update', // Microservicio de Crear
-        'http://localhost:5001/sync-update', // Microservicio de Eliminar
+        'http://3.84.200.203:5000/sync-update', // Microservicio de Crear
+        'http://3.92.229.242:5001/sync-update', // Microservicio de Eliminar
     ];
 
     for (const instance of instances) {
