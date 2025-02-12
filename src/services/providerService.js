@@ -9,6 +9,7 @@ async function updateProvider(_, { id, input }) {
     console.log(`Proveedor con ID ${id} actualizado en la base local`);
 
     // Notificar a los otros microservicios
+    // Notify other microservices
     const instances = [
         'http://localhost:5000/sync-update', // Microservicio de Crear
         'http://localhost:5001/sync-update', // Microservicio de Eliminar

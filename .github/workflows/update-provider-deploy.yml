@@ -1,0 +1,63 @@
+name: Deploy UpdateProvider to AWS EC2
+
+on:
+  push:
+    branches:
+      - test
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 🛎️ Checkout repository
+      uses: actions/checkout@v3
+
+    - name: 🐳 Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: 📦 Build Docker image
+      run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/projectawsstore-updateprovider:latest .
+
+    - name: 🚀 Push Docker image to Docker Hub
+      run: |
+        docker push ${{ secrets.DOCKER_USERNAME }}/projectawsstore-updateprovider:latest
+
+    - name: 🔑 Connect to EC2 and deploy container
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST_UPDATE_PROVIDER }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          echo "✅ Iniciando despliegue en EC2..."
+
+          # Iniciar sesión en Docker Hub
+          sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+          # Descargar la última imagen desde Docker Hub
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/projectawsstore-updateprovider:latest
+
+          # Verificar si el contenedor ya existe y eliminarlo antes de correr uno nuevo
+          if [ $(sudo docker ps -aq -f name=update-provider) ]; then
+            echo "🛑 Deteniendo y eliminando el contenedor existente..."
+            sudo docker stop update-provider || true
+            sudo docker rm -f update-provider || true
+          fi
+
+          # Asegurar que el puerto 5002 no esté bloqueado
+          if sudo lsof -i :5002; then
+            echo "⚠️ El puerto 5002 está en uso. Liberándolo..."
+            sudo lsof -t -i :5002 | xargs sudo kill -9 || true
+          fi
+
+          # Ejecutar el nuevo contenedor
+          echo "🚀 Iniciando nuevo contenedor update-provider..."
+          sudo docker run -d -p 4002:4002 -p 5002:5002 --name update-provider ${{ secrets.DOCKER_USERNAME }}/projectawsstore-updateprovider
+
+          echo "✅ Despliegue completado exitosamente."
