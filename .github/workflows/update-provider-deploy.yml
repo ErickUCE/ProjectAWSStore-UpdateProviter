@@ -37,6 +37,9 @@ jobs:
         script: |
           echo "✅ Iniciando despliegue en EC2..."
 
+          # Crear el archivo .env desde el secreto de GitHub
+          echo "${{ secrets.ENV_FILE_UPDATE }}" > .env
+
           # Iniciar sesión en Docker Hub
           sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
@@ -56,8 +59,8 @@ jobs:
             sudo lsof -t -i :5002 | xargs sudo kill -9 || true
           fi
 
-          # Ejecutar el nuevo contenedor
+          # Ejecutar el nuevo contenedor con el archivo .env
           echo "🚀 Iniciando nuevo contenedor update-provider..."
-          sudo docker run -d -p 4002:4002 -p 5002:5002 --name update-provider ${{ secrets.DOCKER_USERNAME }}/projectawsstore-updateprovider
+          sudo docker run -d -p 4002:4002 -p 5002:5002 --env-file .env --name update-provider ${{ secrets.DOCKER_USERNAME }}/projectawsstore-updateprovider
 
           echo "✅ Despliegue completado exitosamente."
