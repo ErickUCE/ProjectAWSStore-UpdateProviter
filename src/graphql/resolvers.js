@@ -15,9 +15,9 @@ const resolvers = {
 
                 // Notificar a los otros microservicios
                 const instances = [
-                    'http://localhost:5000/sync-update', // Microservicio de Crear
-                    'http://localhost:5001/sync-update',  // Microservicio de Eliminar
-                    'http://localhost:5003/sync-update'  // ✅ Microservicio de Leer
+                    'http://34.198.77.62:5000/sync-update', // Microservicio de Crear
+                    'http://23.21.70.193:5001/sync-update',  // Microservicio de Eliminar
+                    'http://3.229.198.244:5003/sync-update'  // ✅ Microservicio de Leer
                 ];
 
                 for (const instance of instances) {
