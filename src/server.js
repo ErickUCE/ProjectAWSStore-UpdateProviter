@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const sequelize = require('./config/database');
 const resolvers = require('./graphql/resolvers');
 const router = require('./routes/providerRoutes');
+const cors = require('cors'); // ✅ Importar CORS
 
 // Leer el esquema GraphQL
 const typeDefs = fs.readFileSync(path.join(__dirname, 'graphql/schema.graphql'), 'utf-8');
@@ -18,6 +19,12 @@ const server = new ApolloServer({
 
 // Configurar Express
 const app = express();
+app.use(cors({
+    origin: "*",  // Permite todas las conexiones. ⚠️ Cambia esto si solo permites desde tu frontend
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
 app.use(bodyParser.json());
 app.use(router);
 
@@ -31,3 +38,4 @@ sequelize.sync().then(() => {
         console.log('REST server listening on port 5002');
     });
 });
+
